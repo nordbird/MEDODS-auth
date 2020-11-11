@@ -3,7 +3,6 @@ package controllers
 import (
 	"../models"
 	"../utils"
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 )
@@ -24,7 +23,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	request.AccessToken = accessTokenString
-	request.RefreshToken = base64.StdEncoding.EncodeToString([]byte(refreshTokenString))
+	request.RefreshToken = refreshTokenString
 
 	var response models.WebResponse
 	response.Payload["request"] = request
@@ -41,18 +40,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenValid, message := models.IsValidAccessToken(request.AccessToken)
-	if !accessTokenValid {
-		utils.Respond(w, models.WebResponse{Message: message})
-		return
-	}
-
-	tokenData, err := base64.StdEncoding.DecodeString(request.RefreshToken)
-	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
-	}
-
-	refreshTokenValid, message := models.IsValidRefreshToken(string(tokenData), request.AccessToken)
+	refreshTokenValid, message := models.IsValidToken(request.RefreshToken)
 	if !refreshTokenValid {
 		utils.Respond(w, models.WebResponse{Message: message})
 		return
@@ -65,10 +53,46 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	request.AccessToken = accessTokenString
-	request.RefreshToken = base64.StdEncoding.EncodeToString([]byte(refreshTokenString))
+	request.RefreshToken = refreshTokenString
 
 	var response models.WebResponse
 	response.Payload["request"] = request
 
 	utils.Respond(w, response)
+}
+
+func DeleteOneRefreshToken(w http.ResponseWriter, r *http.Request) {
+	var request models.WebRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
+	accessTokenValid, message := models.IsValidToken(request.AccessToken)
+	if !accessTokenValid {
+		utils.Respond(w, models.WebResponse{Message: message})
+		return
+	}
+
+	utils.Respond(w, models.WebResponse{Message: "Ok"})
+}
+
+func DeleteAllRefreshToken(w http.ResponseWriter, r *http.Request) {
+	var request models.WebRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
+	accessTokenValid, message := models.IsValidToken(request.AccessToken)
+	if !accessTokenValid {
+		utils.Respond(w, models.WebResponse{Message: message})
+		return
+	}
+
+	utils.Respond(w, models.WebResponse{Message: "Ok"})
 }

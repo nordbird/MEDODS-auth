@@ -1,19 +1,14 @@
 package models
 
 import (
+	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
 	"os"
-	"strings"
 	"time"
 )
 
-type AccessClaims struct {
+type Claims struct {
 	GUID string `json:"guid"`
-	jwt.StandardClaims
-}
-
-type RefreshClaims struct {
-	AccessToken string `json:"access_token"`
 	jwt.StandardClaims
 }
 
@@ -28,29 +23,36 @@ type WebResponse struct {
 	Payload map[string]interface{} `json:"payload"`
 }
 
-func CreateAccessToken(guid string) (string, error) {
-	accessExpirationTime := time.Now().Add(3 * 24 * time.Hour)
+func CreateToken(guid string, expirationDuration time.Duration) (string, error) {
+	expirationTime := time.Now().Add(expirationDuration)
 
-	accessClaims := AccessClaims{
+	claims := Claims{
 		GUID: guid,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: accessExpirationTime.Unix(),
+			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS512, accessClaims)
-	accessTokenString, err := accessToken.SignedString(os.Getenv("jwt_salt"))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	tokenString, err := token.SignedString(os.Getenv("jwt_salt"))
 	if err != nil {
 		return "Creation access token failed", err
 	}
 
-	return accessTokenString, err
+	tokenString = base64.StdEncoding.EncodeToString([]byte(tokenString))
+
+	return tokenString, err
 }
 
-func IsValidAccessToken(tokenString string) (bool, string) {
-	claims := &AccessClaims{}
+func IsValidToken(tokenString string) (bool, string) {
+	tokenData, err := base64.StdEncoding.DecodeString(tokenString)
+	if err != nil {
+		return false, err.Error()
+	}
 
-	tkn, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(string(tokenData), claims, func(token *jwt.Token) (interface{}, error) {
 		return os.Getenv("jwt_salt"), nil
 	})
 
@@ -61,64 +63,20 @@ func IsValidAccessToken(tokenString string) (bool, string) {
 		return false, err.Error()
 	}
 
-	if !tkn.Valid {
+	if !token.Valid {
 		return false, "Access token is invalid"
 	}
 
 	return true, "Access token is valid"
 }
 
-func CreateRefreshToken(accessTokenString string) (string, error) {
-	refreshExpirationTime := time.Now().Add(6 * time.Hour)
-
-	refreshClaims := RefreshClaims{
-		AccessToken: accessTokenString,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: refreshExpirationTime.Unix(),
-		},
-	}
-
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS512, refreshClaims)
-	refreshTokenString, err := refreshToken.SignedString(os.Getenv("jwt_salt"))
-	if err != nil {
-		return "Creation refresh token failed", err
-	}
-
-	return refreshTokenString, err
-}
-
-func IsValidRefreshToken(refreshTokenString string, accessTokenString string) (bool, string) {
-	claims := &RefreshClaims{}
-
-	tkn, err := jwt.ParseWithClaims(refreshTokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("jwt_salt"), nil
-	})
-
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			return false, "Refresh token signature is invalid"
-		}
-		return false, err.Error()
-	}
-
-	if !tkn.Valid {
-		return false, "Refresh token is invalid"
-	}
-
-	if strings.Compare(accessTokenString, claims.AccessToken) != 0 {
-		return false, "Refresh token is not suitable"
-	}
-
-	return true, "Refresh token is valid"
-}
-
 func CreateTokenPair(guid string) (string, string, error) {
-	accessTokenString, err := CreateAccessToken(guid)
+	accessTokenString, err := CreateToken(guid, 5*time.Minute)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshTokenString, err := CreateRefreshToken(accessTokenString)
+	refreshTokenString, err := CreateToken(guid, 7*24*time.Hour)
 	if err != nil {
 		return "", "", err
 	}
