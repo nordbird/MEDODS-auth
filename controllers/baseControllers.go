@@ -68,7 +68,7 @@ func SaveUserSession(session models.UserSession) error {
 	return nil
 }
 
-func AddTokenPair(guid string, tokenPair models.DBTokenPair) error {
+func AddDBTokenPair(guid string, tokenPair models.DBTokenPair) error {
 	session, err := GetUserSession(guid)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func AddTokenPair(guid string, tokenPair models.DBTokenPair) error {
 	return err
 }
 
-func RefreshTokenPair(guid string, oldTokenPair models.DBTokenPair, newTokenPair models.DBTokenPair) error {
+func RefreshDBTokenPair(guid string, oldTokenPair models.DBTokenPair, newTokenPair models.DBTokenPair) error {
 	session, err := GetUserSession(guid)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func RefreshTokenPair(guid string, oldTokenPair models.DBTokenPair, newTokenPair
 	return err
 }
 
-func DeleteTokenPair(guid string, tokenPair models.DBTokenPair) error {
+func DeleteDBTokenPair(guid string, tokenPair models.DBTokenPair) error {
 	session, err := GetUserSession(guid)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func DeleteTokenPair(guid string, tokenPair models.DBTokenPair) error {
 	return err
 }
 
-func DeleteAllTokenPair(guid string) error {
+func DeleteAllDBTokenPair(guid string) error {
 	session, err := GetUserSession(guid)
 	if err != nil {
 		return err

@@ -75,7 +75,7 @@ func IsValidToken(guid string, tokenString string) (bool, string) {
 	return true, "Token is valid"
 }
 
-func CreateTokenPair(guid string) (string, string, error) {
+func CreateWebTokenPair(guid string) (string, string, error) {
 	accessTokenString, err := CreateToken(guid, 5*time.Minute)
 	if err != nil {
 		return "", "", err

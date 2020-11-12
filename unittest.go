@@ -9,7 +9,7 @@ import (
 func main() {
 	guid := "Bob"
 
-	accessTokenA, refreshTokenA, err := models.CreateTokenPair(guid)
+	accessTokenA, refreshTokenA, err := models.CreateWebTokenPair(guid)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -19,7 +19,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	accessTokenB, refreshTokenB, err := models.CreateTokenPair(guid)
+	accessTokenB, refreshTokenB, err := models.CreateWebTokenPair(guid)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	accessTokenC, refreshTokenC, err := models.CreateTokenPair(guid)
+	accessTokenC, refreshTokenC, err := models.CreateWebTokenPair(guid)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,30 +39,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = controllers.AddTokenPair(guid, tokenPairA)
+	err = controllers.AddDBTokenPair(guid, tokenPairA)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = controllers.AddTokenPair(guid, tokenPairB)
+	err = controllers.AddDBTokenPair(guid, tokenPairB)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = controllers.AddTokenPair(guid, tokenPairC)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = controllers.DeleteTokenPair(guid, tokenPairB)
+	err = controllers.AddDBTokenPair(guid, tokenPairC)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = controllers.RefreshTokenPair(guid, tokenPairC, tokenPairB)
+	err = controllers.DeleteDBTokenPair(guid, tokenPairB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = controllers.DeleteAllTokenPair(guid)
+	err = controllers.RefreshDBTokenPair(guid, tokenPairC, tokenPairB)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = controllers.DeleteAllDBTokenPair(guid)
 	if err != nil {
 		log.Fatal(err)
 	}

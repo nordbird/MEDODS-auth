@@ -24,14 +24,11 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenString, refreshTokenString, err := models.CreateTokenPair(request.GUID)
+	request.AccessToken, request.RefreshToken, err = AddTokens(request.GUID)
 	if err != nil {
 		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
-
-	request.AccessToken = accessTokenString
-	request.RefreshToken = refreshTokenString
 
 	var response models.WebResponse
 	response.Payload["request"] = request
@@ -54,14 +51,23 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenString, refreshTokenString, err := models.CreateTokenPair(request.GUID)
+	tokenPair, err := models.CreateDBTokenPair(request.AccessToken, request.RefreshToken)
 	if err != nil {
 		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
-	request.AccessToken = accessTokenString
-	request.RefreshToken = refreshTokenString
+	err = DeleteDBTokenPair(request.GUID, tokenPair)
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
+	request.AccessToken, request.RefreshToken, err = AddTokens(request.GUID)
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
 
 	var response models.WebResponse
 	response.Payload["request"] = request
@@ -84,6 +90,18 @@ func DeleteOneRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenPair, err := models.CreateDBTokenPair(request.AccessToken, request.RefreshToken)
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
+	err = DeleteDBTokenPair(request.GUID, tokenPair)
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
 	Respond(w, models.WebResponse{Message: "Ok"})
 }
 
@@ -102,5 +120,29 @@ func DeleteAllRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = DeleteAllDBTokenPair(request.GUID)
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
 	Respond(w, models.WebResponse{Message: "Ok"})
+}
+
+func AddTokens(guid string) (string, string, error) {
+	accessTokenString, refreshTokenString, err := models.CreateWebTokenPair(guid)
+	if err != nil {
+		return "", "", err
+	}
+
+	tokenPair, err := models.CreateDBTokenPair(accessTokenString, refreshTokenString)
+	if err != nil {
+		return "", "", err
+	}
+
+	err = AddDBTokenPair(guid, tokenPair)
+	if err != nil {
+		return "", "", err
+	}
+	return accessTokenString, refreshTokenString, err
 }
