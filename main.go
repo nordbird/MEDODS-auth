@@ -4,14 +4,20 @@ import (
 	"log"
 	"medods-auth/controllers"
 	"net/http"
+	"os"
 )
 
 func main() {
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
 	http.HandleFunc("/signin", controllers.SignIn)
 	http.HandleFunc("/refresh", controllers.Refresh)
 	http.HandleFunc("/delete-one-refresh", controllers.DeleteOneRefreshToken)
 	http.HandleFunc("/delete-all-refresh", controllers.DeleteAllRefreshToken)
 
-	// start the server on port 8000
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
