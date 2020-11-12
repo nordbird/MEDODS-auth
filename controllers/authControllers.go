@@ -2,23 +2,31 @@ package controllers
 
 import (
 	"../models"
-	"../utils"
 	"encoding/json"
 	"net/http"
 )
+
+func Respond(w http.ResponseWriter, data models.WebResponse) {
+	w.Header().Add("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	var request models.WebRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
 	accessTokenString, refreshTokenString, err := models.CreateTokenPair(request.GUID)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
@@ -28,7 +36,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	var response models.WebResponse
 	response.Payload["request"] = request
 
-	utils.Respond(w, response)
+	Respond(w, response)
 }
 
 func Refresh(w http.ResponseWriter, r *http.Request) {
@@ -36,19 +44,19 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
-	refreshTokenValid, message := models.IsValidToken(request.RefreshToken)
+	refreshTokenValid, message := models.IsValidToken(request.GUID, request.RefreshToken)
 	if !refreshTokenValid {
-		utils.Respond(w, models.WebResponse{Message: message})
+		Respond(w, models.WebResponse{Message: message})
 		return
 	}
 
 	accessTokenString, refreshTokenString, err := models.CreateTokenPair(request.GUID)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
@@ -58,7 +66,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	var response models.WebResponse
 	response.Payload["request"] = request
 
-	utils.Respond(w, response)
+	Respond(w, response)
 }
 
 func DeleteOneRefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -66,17 +74,17 @@ func DeleteOneRefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
-	accessTokenValid, message := models.IsValidToken(request.AccessToken)
+	accessTokenValid, message := models.IsValidToken(request.GUID, request.AccessToken)
 	if !accessTokenValid {
-		utils.Respond(w, models.WebResponse{Message: message})
+		Respond(w, models.WebResponse{Message: message})
 		return
 	}
 
-	utils.Respond(w, models.WebResponse{Message: "Ok"})
+	Respond(w, models.WebResponse{Message: "Ok"})
 }
 
 func DeleteAllRefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -84,15 +92,15 @@ func DeleteAllRefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		utils.Respond(w, models.WebResponse{Message: err.Error()})
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 
-	accessTokenValid, message := models.IsValidToken(request.AccessToken)
+	accessTokenValid, message := models.IsValidToken(request.GUID, request.AccessToken)
 	if !accessTokenValid {
-		utils.Respond(w, models.WebResponse{Message: message})
+		Respond(w, models.WebResponse{Message: message})
 		return
 	}
 
-	utils.Respond(w, models.WebResponse{Message: "Ok"})
+	Respond(w, models.WebResponse{Message: "Ok"})
 }

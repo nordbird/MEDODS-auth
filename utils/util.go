@@ -1,16 +1,25 @@
 package utils
 
 import (
-	"../models"
 	"encoding/json"
-	"net/http"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
-func Respond(w http.ResponseWriter, data models.WebResponse) {
-	w.Header().Add("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(data)
+func GetHash(text string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(text), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func CheckHash(text, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(text))
+}
+
+func PrintStruct(x interface{}) {
+	json, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		log.Fatalf(err.Error())
 	}
+	fmt.Printf("%s\n", string(json))
 }

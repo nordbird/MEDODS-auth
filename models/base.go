@@ -1,6 +1,7 @@
 package models
 
 import (
+	"../utils"
 	"context"
 	"fmt"
 	"github.com/joho/godotenv"
@@ -11,11 +12,19 @@ import (
 	"time"
 )
 
+type DBTokenPair struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type UserSession struct {
+	GUID   string      `json:"guid"`
+	Tokens []DBTokenPair `json:"tokens"`
+}
+
 var db *mongo.Client
 
 func init() {
-
-	// Load config
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Print(err)
@@ -35,7 +44,19 @@ func init() {
 	db = client
 }
 
-// возвращает дескриптор объекта DB
 func GetDB() *mongo.Client {
 	return db
+}
+
+func GetCollection() *mongo.Collection {
+	return GetDB().Database("test").Collection("tokens")
+}
+
+func CreateDBTokenPair(accessTokenString string, refreshTokenString string) (DBTokenPair, error) {
+	var pair DBTokenPair
+	var err error
+
+	pair.AccessToken = accessTokenString
+	pair.RefreshToken, err = utils.GetHash(refreshTokenString)
+	return pair, err
 }
