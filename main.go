@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./controllers"
 	"log"
+	"medods-auth/controllers"
 	"net/http"
 )
 

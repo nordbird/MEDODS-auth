@@ -1,13 +1,13 @@
 package models
 
 import (
-	"../utils"
 	"context"
 	"fmt"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"medods-auth/utils"
 	"os"
 	"time"
 )
@@ -18,7 +18,7 @@ type DBTokenPair struct {
 }
 
 type UserSession struct {
-	GUID   string      `json:"guid"`
+	GUID   string        `json:"guid"`
 	Tokens []DBTokenPair `json:"tokens"`
 }
 

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"../models"
 	"encoding/json"
+	"medods-auth/models"
 	"net/http"
 )
 

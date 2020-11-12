@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./controllers"
-	"./models"
 	"log"
+	"medods-auth/controllers"
+	"medods-auth/models"
 )
 
 func main() {
