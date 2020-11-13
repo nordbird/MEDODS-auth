@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"io"
 	"medods-auth/models"
 	"net/http"
 )
@@ -11,6 +12,37 @@ func Respond(w http.ResponseWriter, data models.WebResponse) {
 	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func Hello(w http.ResponseWriter, r *http.Request) {
+	var request models.WebRequest
+	var response models.WebResponse
+
+	response.Message = "Hello!"
+
+	routes := map[string]string{}
+
+	routes["route /signin"] = "creating tokens"
+	routes["route /refresh"] = "refresh tokens"
+	routes["route /delete-one-refresh"] = "deleting one refresh token"
+	routes["route /delete-all-refresh"] = "deleting all refresh token"
+
+	request.GUID = "some_GUID"
+	request.AccessToken = "this_is_access_token"
+	request.RefreshToken = "this_is_refresh_token_in_base64"
+	response.Payload = map[string]interface{}{"routes": routes, "data format": request}
+
+	jsonStr, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
+		return
+	}
+
+	_, err = io.WriteString(w, string(jsonStr))
+	if err != nil {
+		Respond(w, models.WebResponse{Message: err.Error()})
 		return
 	}
 }
@@ -31,7 +63,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response models.WebResponse
-	response.Payload["request"] = request
+	response.Payload = map[string]interface{}{"tokens": request}
 
 	Respond(w, response)
 }
@@ -70,7 +102,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response models.WebResponse
-	response.Payload["request"] = request
+	response.Payload = map[string]interface{}{"tokens": request}
 
 	Respond(w, response)
 }

@@ -17,9 +17,9 @@ func CheckHash(text, hash string) error {
 }
 
 func PrintStruct(x interface{}) {
-	json, err := json.MarshalIndent(x, "", "  ")
+	jsonStr, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-	fmt.Printf("%s\n", string(json))
+	fmt.Printf("%s\n", string(jsonStr))
 }

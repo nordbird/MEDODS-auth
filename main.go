@@ -14,6 +14,7 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
+	http.HandleFunc("/", controllers.Hello)
 	http.HandleFunc("/signin", controllers.SignIn)
 	http.HandleFunc("/refresh", controllers.Refresh)
 	http.HandleFunc("/delete-one-refresh", controllers.DeleteOneRefreshToken)
