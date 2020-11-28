@@ -1,4 +1,4 @@
-# MEDODS auth
+# JWT auth
 
 Тестовое задание на позицию Junior Web Dev
 
